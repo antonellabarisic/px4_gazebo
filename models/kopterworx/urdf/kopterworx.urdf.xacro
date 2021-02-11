@@ -1,0 +1,230 @@
+<?xml version="1.0"?>
+
+<robot name="kopterworx" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:property name="namespace" value="$(arg namespace)" />
+  <xacro:property name="enable_velodyne" value="$(arg enable_velodyne)"/>
+
+  <xacro:arg name='name' default='kopterworx' />
+  <xacro:arg name='mavlink_addr' default='INADDR_ANY' />
+  <xacro:arg name='mavlink_udp_port' default='14560' />
+  <xacro:arg name='mavlink_tcp_port' default='4560' />
+  <xacro:arg name='serial_enabled' default='false' />
+  <xacro:arg name='serial_device' default='/dev/ttyACM0' />
+  <xacro:arg name='baudrate' default='921600' />
+  <xacro:arg name='qgc_addr' default='INADDR_ANY' />
+  <xacro:arg name='qgc_udp_port' default='14550' />
+  <xacro:arg name='sdk_addr' default='INADDR_ANY' />
+  <xacro:arg name='sdk_udp_port' default='14540' />
+  <xacro:arg name='hil_mode' default='false' />
+  <xacro:arg name='hil_state_level' default='false' />
+  <xacro:arg name='send_vision_estimation' default='false' />
+  <xacro:arg name='send_odometry' default='false' />
+  <xacro:arg name='use_lockstep' default='true' />
+  <xacro:arg name='use_tcp' default='true' />
+  <xacro:arg name='vehicle_is_tailsitter' default='false' />
+  <xacro:arg name='visual_material' default='DarkGrey' />
+  <xacro:arg name='gps_indoor_jamming' default='false' />
+  <xacro:arg name='rotor_input_multiplier' default='600.0' />
+	
+  <xacro:property name="horizontal_velodyne_origin">
+    <origin xyz="0.08 0. -0.1578" rpy="3.141592653589793 0.1323284641020683 0." />
+  </xacro:property>
+	
+  <xacro:property name="front_facing_camera">
+	<origin xyz="0.2 0 0.05" rpy="0 0 0"/>
+  </xacro:property>
+
+  <xacro:property name="down_facing_camera">
+	<origin xyz="0 0.2 -0.3" rpy="-1.570796 1.570796 0"/>
+  </xacro:property>
+
+  <xacro:property name="camera_mass" value="1e-5"/>
+	<xacro:property name="camera_size" value="0.05" />
+  <xacro:property name="camera_inertia">
+    <inertia
+    ixx="1e-12"
+    iyy="1e-12"
+    izz="1e-12"
+    ixy="0.0" ixz="0.0" iyz="0.0" />
+  </xacro:property>
+
+  <!-- Instantiate kopterworx mechanics "mechanics" -->
+  <xacro:include filename="$(find px4_gazebo)/models/kopterworx/urdf/kopterworx_base.urdf.xacro" />
+  <xacro:include filename="$(find px4_gazebo)/models/util/component_snippets.xacro" />
+
+  <!-- Mavlink interface {-->
+  <!-- Instantiate mavlink telemetry interface. -->
+  <xacro:mavlink_interface_macro
+    namespace="${namespace}"
+    imu_sub_topic="/imu"
+    mag_sub_topic="/mag"
+    baro_sub_topic="/baro"
+    mavlink_addr="$(arg mavlink_addr)"
+    mavlink_udp_port="$(arg mavlink_udp_port)"
+    mavlink_tcp_port="$(arg mavlink_tcp_port)"
+    serial_enabled="$(arg serial_enabled)"
+    serial_device="$(arg serial_device)"
+    baudrate="$(arg baudrate)"
+    qgc_addr="$(arg qgc_addr)"
+    qgc_udp_port="$(arg qgc_udp_port)"
+    sdk_addr="$(arg sdk_addr)"
+    sdk_udp_port="$(arg sdk_udp_port)"
+    hil_mode="$(arg hil_mode)"
+    hil_state_level="$(arg hil_state_level)"
+    vehicle_is_tailsitter="$(arg vehicle_is_tailsitter)"
+    send_vision_estimation="$(arg send_vision_estimation)"
+    send_odometry="$(arg send_odometry)"
+    enable_lockstep="$(arg use_lockstep)"
+    use_tcp="$(arg use_tcp)"
+    rotor_input_multiplier="$(arg rotor_input_multiplier)"
+    >
+  </xacro:mavlink_interface_macro>
+
+  <!-- Magnetometer {-->
+  <xacro:magnetometer_plugin_macro
+    namespace="${namespace}"
+    pub_rate="100"
+    noise_density="0.0004"
+    random_walk="0.0000064"
+    bias_correlation_time="600"
+    mag_topic="/mag"
+    >
+  </xacro:magnetometer_plugin_macro>
+
+  <!-- Barometer {-->
+  <xacro:barometer_plugin_macro
+    namespace="${namespace}"
+    pub_rate="100"
+    baro_topic="/baro"
+    baro_drift_pa_per_sec="0"
+  >
+  </xacro:barometer_plugin_macro>
+
+  <!-- IMU (ADIS16448) {-->
+  <xacro:imu_plugin_macro
+    namespace="${namespace}"
+    imu_suffix=""
+    parent_link="base_link"
+    imu_topic="/imu"
+    mass_imu_sensor="0.015"
+    gyroscope_noise_density="0.00018665"
+    gyroscope_random_walk="0.000038785"
+    gyroscope_bias_correlation_time="1000.0"
+    gyroscope_turn_on_bias_sigma="0.0087"
+    accelerometer_noise_density="0.00186"
+    accelerometer_random_walk="0.006"
+    accelerometer_bias_correlation_time="300.0"
+    accelerometer_turn_on_bias_sigma="0.1960"
+    >
+  <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+  <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:imu_plugin_macro>
+
+  <!-- GPS {-->
+  <xacro:gps_macro
+    gps_name="gps0"
+    pos_x="0.0"
+    pos_y="0.0"
+    pos_z="0.0"
+    gps_noise="true"
+    gps_xy_random_walk="2.0"
+    gps_z_random_walk="4.0"
+    gps_xy_noise_density="2.0e-4"
+    gps_z_noise_density="4.0e-4"
+    gps_vxy_noise_density="0.2"
+    gps_vz_noise_density="0.4"
+    update_rate="50"
+    namespace="${namespace}"
+    parent_link="base_link">
+  </xacro:gps_macro>
+
+  <xacro:if value="${enable_velodyne}">
+	  <xacro:include filename="$(find velodyne_description)/urdf/VU-8.urdf.xacro"/>
+	  <VU-8 parent="base_link" name="velodyne" topic="${namespace}/velodyne_points" hz="10" samples="440" gpu="false"
+					min_range="1" lasers="16">
+		  <xacro:insert_block name="horizontal_velodyne_origin"/>
+	  </VU-8>
+  </xacro:if>
+
+	<!-- Realistic odometry sensor with noise -->
+  <xacro:odometry_plugin_macro
+	namespace="${namespace}"
+	odometry_sensor_suffix=""
+	parent_link="base_link"
+	pose_topic="pose"
+	pose_with_covariance_topic="pose_with_covariance"
+	position_topic="position"
+	transform_topic="transform"
+	odometry_topic="odometry"
+	parent_frame_id="world"
+	child_frame_id="${namespace}/base_link"
+	mass_odometry_sensor="0.01"
+	measurement_divisor="20"
+	measurement_delay="0"
+	unknown_delay="0.0"
+	noise_normal_position="0.0 0.0 0.0"
+	noise_normal_quaternion="0.0 0.0 0.0"
+	noise_normal_linear_velocity="0.0 0.0 0.0"
+	noise_normal_angular_velocity="0.0 0.0 0.0"
+	noise_uniform_position="0.0 0.0 0.0"
+	noise_uniform_quaternion="0.0 0.0 0.0"
+	noise_uniform_linear_velocity="0.0 0.0 0.0"
+	noise_uniform_angular_velocity="0.0 0.0 0.0"
+	enable_odometry_map="false"
+	odometry_map=""
+	image_scale="">
+	<inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" /> <!-- [kg m^2] [kg m^2] [kg m^2] [kg m^2] [kg m^2] [kg m^2] -->
+	<origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  </xacro:odometry_plugin_macro>
+
+<!-- Choose one of the following (and comment out the other): fixed RGBD camera or gimbal with RGBD camera. -->	
+
+<!-- Fixed RGBD camera-->
+<!--   <xacro:cam
+    namespace="$(arg namespace)"
+    camera_link="${camera_size}"
+    camera_mass="${camera_mass}"
+    parent="base_link">
+	<xacro:insert_block name="front_facing_camera"/>    
+    <xacro:insert_block name="camera_inertia"/>
+  </xacro:cam> -->
+
+<!-- RGBD camera on gimbal -->
+<!--   <xacro:gimbal_macro parent="base_link">
+	<origin xyz="0.25 0 -0.1" rpy="0 0 0"/>
+  </xacro:gimbal_macro> -->
+
+
+	<!-- Realistic odometry sensor with noise for gimbal-->
+<!--   <xacro:odometry_plugin_macro
+	namespace="gimbal"
+	odometry_sensor_suffix=""
+	parent_link="gimbal_link_4"
+	pose_topic="pose"
+	pose_with_covariance_topic="pose_with_covariance"
+	position_topic="position"
+	transform_topic="transform"
+	odometry_topic="odometry"
+	parent_frame_id="world"
+	child_frame_id="${namespace}/base_link"
+	mass_odometry_sensor="0.00001"
+	measurement_divisor="5"
+	measurement_delay="0"
+	unknown_delay="0.0"
+	noise_normal_position="0.0 0.0 0.0"
+	noise_normal_quaternion="0.0 0.0 0.0"
+	noise_normal_linear_velocity="0.0 0.0 0.0"
+	noise_normal_angular_velocity="0.0 0.0 0.0"
+	noise_uniform_position="0.0 0.0 0.0"
+	noise_uniform_quaternion="0.0 0.0 0.0"
+	noise_uniform_linear_velocity="0.0 0.0 0.0"
+	noise_uniform_angular_velocity="0.0 0.0 0.0"
+	enable_odometry_map="false"
+	odometry_map=""
+	image_scale="">
+	<inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+	<origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  </xacro:odometry_plugin_macro> -->
+	
+</robot>

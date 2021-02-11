@@ -1,0 +1,41 @@
+#!/bin/sh
+#
+# @name Kopterworx Eagle Quadrotor SITL
+#
+# @type Quadrotor X
+#
+# @maintainer Antonella Barisic <antonella.barisic@fer.hr>
+#
+
+. ${R}etc/init.d/rc.mc_defaults
+
+
+set MAV_TYPE 2
+
+# set MIXER quad_x_cw
+set MIXER quad_x
+
+# disable RC input check for simulation
+param set NAV_RCL_ACT 0
+
+# battery parameters
+param set BAT_N_CELLS 6
+param set BAT_CAPACITY 12000
+param set BAT_V_DIV 15.272082328796386719
+param set BAT_V_EMPTY 3.549999952316284180
+param set BAT_V_CHARGED	4.050000190734863281
+param set BAT_V_LOAD_DROP	0.300000011920928955
+
+# hover thrust
+param set MPC_THR_HOVER	0.33
+
+# use thrust estimator
+param set MPC_USE_HTE	1
+
+# minimum takeoff altitude
+param set MIS_TAKEOFF_ALT	3.000000000000000000
+
+# tune down rate controllers to avoid vibrations
+# default value = 0.15
+param set MC_PITCHRATE_P 0.12
+param set MC_ROLLRATE_P	0.12

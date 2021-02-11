@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- PX4 SITL environment launch script -->
+    
+    <!-- vehicle model and world -->
+    <arg name="est" default="ekf2"/>
+    <arg name="vehicle" default="kopterworx"/>
+    <arg name="world" default="$(find mavlink_sitl_gazebo)/worlds/empty.world"/>
+
+    <env name="PX4_SIM_MODEL" value="$(arg vehicle)" />
+    <env name="PX4_ESTIMATOR" value="$(arg est)" />
+
+    <!-- PX4 configs -->
+    <arg name="interactive" default="true"/>
+    <arg unless="$(arg interactive)" name="px4_command_arg1" value="-d"/>
+    <arg     if="$(arg interactive)" name="px4_command_arg1" value=""/>
+
+    <node name="sitl" pkg="px4" type="px4" output="screen"
+        args="$(find px4_gazebo)/ROMFS/px4fmu_common -s etc/init.d-posix/rcS $(arg px4_command_arg1)" required="true"/>
+
+</launch>
