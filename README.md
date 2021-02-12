@@ -76,4 +76,18 @@ Everything is the same as for Kopterworx, except that PX4 and Gazebo are launche
 # 1st terminal PX4 SITL + Gazebo
 roslaunch px4_gazebo iris.launch
 ```
+## Adding a new model
 
+1. **Model files**
+
+Create a folder called ```<vehicle_name>``` under models folder and put your .sdf or .xacro files in it. Add a model.config file for your vehicle and add a folder of your model in ```models/CMakeLists.txt``` in the appropriate section. 
+
+2. **Airframe and PX4 parameters**
+
+Airframe configurations are stored in ```/ROMFS/px4fmu_common/init.d-posix/airframes/```. For each new model create a new file named      ```<autostart_ID>_<vehicle_name>```. Autostart ID should be unique and not start with zeros. The configuration file contains the following:
+  - ```MAV_TYPE``` - MAVLink airframe type
+  - ```MIXER``` - mixer file (e.g. quad_x)
+  - ```NAV_RCL_ACT 0 ``` - disable RC loss failsafe mode for simulation purposes
+  - other PX4 parameters (optional)
+
+To ensure that you have a clean parameter setup after multiple parameter changes, delete folder ``` ~/.ros/eeprom```.
