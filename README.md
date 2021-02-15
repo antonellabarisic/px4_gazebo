@@ -16,7 +16,7 @@ make px4_sitl gazebo DONT_RUN=1
 ```
 Add packages to ~/.bashrc.
 ```
-echo 'source '$(pwd)'/Tools/setup_gazebo.bash '$(pwd)' '$(pwd)'/build/px4_sitl_default' >> ~/.bashrc
+echo 'source '$(pwd)'/Tools/setup_gazebo.bash '$(pwd)' '$(pwd)'/build/px4_sitl_default >> /dev/null' >> ~/.bashrc
 echo 'export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:'$(pwd)'' >> ~/.bashrc
 echo 'export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:'$(pwd)'/Tools/sitl_gazebo' >> ~/.bashrc
 ```
